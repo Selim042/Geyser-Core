@@ -1,0 +1,4 @@
+name: GeyserCore
+main: selim.geysercore.bukkit.GeyserCoreSpigot
+depend: [ProtocolLib]
+version: 0.0.1

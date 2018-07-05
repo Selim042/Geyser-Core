@@ -1,0 +1,16 @@
+[
+{
+  "modid": "geysercore",
+  "name": "Geyser Core",
+  "description": "Handles some core functionality of Geyser.  Part of the Geyser suite.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Selim_042"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
