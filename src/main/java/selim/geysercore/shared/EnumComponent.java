@@ -5,5 +5,11 @@ import java.io.Serializable;
 public enum EnumComponent implements Serializable {
 	CORE,
 	RECIPES,
-	HUD;
+	HUD,
+	RESOURCES,
+	TRANSLATIONS,
+	ITEMS,
+	GUI,
+	BLOCKS,
+	ENTITIES;
 }

@@ -18,7 +18,7 @@ public class PacketRequestComponents implements IMessage {
 
 		@Override
 		public PacketSendComponents onMessage(PacketRequestComponents message, MessageContext ctx) {
-			return null;
+			return new PacketSendComponents(GeyserCoreForge.getInstalledComponents());
 		}
 
 	}

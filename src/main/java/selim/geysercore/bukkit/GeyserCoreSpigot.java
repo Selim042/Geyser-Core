@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -28,8 +29,11 @@ import selim.geysercore.shared.IGeyserPlugin;
 public class GeyserCoreSpigot extends JavaPlugin
 		implements Listener, PluginMessageListener, IGeyserCorePlugin {
 
+	public static Logger LOGGER;
+
 	@Override
 	public void onEnable() {
+		LOGGER = this.getLogger();
 		PluginManager manager = this.getServer().getPluginManager();
 		Bukkit.getMessenger().registerOutgoingPluginChannel(this, GeyserCoreInfo.CHANNEL);
 		manager.registerEvents(this, this);
@@ -114,10 +118,15 @@ public class GeyserCoreSpigot extends JavaPlugin
 		buf.readChar();
 		List<EnumComponent> components = new LinkedList<>();
 		int numComponents = buf.readInt();
-		for (int i = 0; i < numComponents; i++)
+		for (int i = 0; i < numComponents; i++) {
+			String name = BukkitByteBufUtils.readUTF8String(buf);
 			try {
-				components.add(EnumComponent.valueOf(BukkitByteBufUtils.readUTF8String(buf)));
-			} catch (IllegalArgumentException e) {}
+				components.add(EnumComponent.valueOf(name));
+			} catch (IllegalArgumentException e) {
+				LOGGER.log(Level.WARNING, "client tried sending illegal EnumComponent, " + name
+						+ ", this could be because the Geyser Core plugin is out of date");
+			}
+		}
 		return components;
 	}
 
