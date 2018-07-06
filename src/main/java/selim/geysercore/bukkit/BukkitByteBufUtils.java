@@ -12,7 +12,6 @@ import org.bukkit.inventory.ItemStack;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import net.minecraft.server.v1_12_R1.PacketDataSerializer;
 
 public class BukkitByteBufUtils {
@@ -151,9 +150,9 @@ public class BukkitByteBufUtils {
 	public static void writeItemStack(ByteBuf to, ItemStack stack) {
 		PacketDataSerializer serial = new PacketDataSerializer(to);
 		serial.a(CraftItemStack.asNMSCopy(stack));
-//		BukkitPacketBuffer pb = new BukkitPacketBuffer(to);
-//		System.out.println("writing ItemStack 1");
-//		pb.writeItemStack(stack);
+		// BukkitPacketBuffer pb = new BukkitPacketBuffer(to);
+		// System.out.println("writing ItemStack 1");
+		// pb.writeItemStack(stack);
 	}
 
 	/**
@@ -175,7 +174,7 @@ public class BukkitByteBufUtils {
 	}
 
 	/**
-	 * Write an {@link NBTTagCompound} to the byte buffer. It uses the minecraft
+	 * Write an {@link NbtCompound} to the byte buffer. It uses the minecraft
 	 * encoding.
 	 *
 	 * @param to
@@ -189,8 +188,8 @@ public class BukkitByteBufUtils {
 	}
 
 	/**
-	 * Read an {@link NBTTagCompound} from the byte buffer. It uses the
-	 * minecraft encoding.
+	 * Read an {@link NbtCompound} from the byte buffer. It uses the minecraft
+	 * encoding.
 	 *
 	 * @param from
 	 *            The buffer to read from
