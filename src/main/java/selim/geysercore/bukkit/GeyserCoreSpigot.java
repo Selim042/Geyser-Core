@@ -1,6 +1,7 @@
 package selim.geysercore.bukkit;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,11 +30,13 @@ import selim.geysercore.shared.IGeyserPlugin;
 public class GeyserCoreSpigot extends JavaPlugin
 		implements Listener, PluginMessageListener, IGeyserCorePlugin {
 
-	public static Logger LOGGER;
+	protected static Logger LOGGER;
+	protected static GeyserCoreSpigot INSTANCE;
 
 	@Override
 	public void onEnable() {
 		LOGGER = this.getLogger();
+		INSTANCE = this;
 		PluginManager manager = this.getServer().getPluginManager();
 		Bukkit.getMessenger().registerOutgoingPluginChannel(this, GeyserCoreInfo.CHANNEL);
 		manager.registerEvents(this, this);
@@ -61,6 +64,10 @@ public class GeyserCoreSpigot extends JavaPlugin
 	private static final Map<EnumComponent, IGeyserCorePlugin> CORE_PLUGINS = new HashMap<>();
 	private static final List<EnumComponent> REQUIRED_COMPONENTS = new LinkedList<>();
 	private static final Map<Player, List<EnumComponent>> PLAYER_DATA = new HashMap<>();
+
+	public static boolean isComponentRequired(EnumComponent component) {
+		return REQUIRED_COMPONENTS.contains(component);
+	}
 
 	@EventHandler
 	public void onPluginEnable(PluginEnableEvent event) {
@@ -97,7 +104,27 @@ public class GeyserCoreSpigot extends JavaPlugin
 
 			@Override
 			public void run() {
-
+				if (player.getListeningPluginChannels().contains(GeyserCoreInfo.CHANNEL))
+					player.sendPluginMessage(INSTANCE, GeyserCoreInfo.CHANNEL,
+							new byte[] { GeyserCoreInfo.PacketDiscrimators.REQUEST_COMPONENTS });
+				else {
+					kickPlayerForMissing(player, REQUIRED_COMPONENTS);
+					// TODO: Should it announce?
+					// player.sendMessage("This server has " +
+					// GeyserCoreInfo.NAME + " installed. "
+					// + "If you install the client companion Forge mod, "
+					// + "you can see any custom recipes from Spigot plugins
+					// installed on the server in JEI.");
+					// TextComponent base = new TextComponent("You can find the
+					// mod ");
+					// TextComponent link = new TextComponent("here.");
+					// link.setUnderlined(true);
+					// link.setColor(ChatColor.BLUE);
+					// link.setClickEvent(new ClickEvent(Action.OPEN_URL,
+					// GeyserCoreInfo.DOWNLOAD_LINK));
+					// base.addExtra(link);
+					// player.spigot().sendMessage(base);
+				}
 			}
 		}, ping);
 	}
@@ -108,9 +135,30 @@ public class GeyserCoreSpigot extends JavaPlugin
 			return;
 		switch ((char) message[0]) {
 		case GeyserCoreInfo.PacketDiscrimators.SEND_COMPONENTS:
-			PLAYER_DATA.put(player, parseComponents(message));
+			List<EnumComponent> components = parseComponents(message);
+			List<EnumComponent> missingComponents = new ArrayList<>();
+			for (EnumComponent component : REQUIRED_COMPONENTS)
+				if (!components.contains(component))
+					missingComponents.add(component);
+			if (missingComponents.isEmpty())
+				PLAYER_DATA.put(player, components);
+			else
+				kickPlayerForMissing(player, missingComponents);
 			break;
 		}
+	}
+
+	private static void kickPlayerForMissing(Player player, List<EnumComponent> missingComponents) {
+		String missingString = "";
+		for (EnumComponent component : missingComponents)
+			missingString += component + ", ";
+		if (missingString.length() == 0)
+			return;
+		missingString = missingString.substring(0, missingString.length() - 2);
+		player.kickPlayer(
+				"This servers requires that you have the following Geyser components installed: "
+						+ missingString + "\nYou can find more information here: "
+						+ GeyserCoreInfo.GEYSER_INFO_URL);
 	}
 
 	private List<EnumComponent> parseComponents(byte[] message) {
