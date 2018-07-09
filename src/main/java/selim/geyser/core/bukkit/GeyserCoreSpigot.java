@@ -1,4 +1,4 @@
-package selim.geysercore.bukkit;
+package selim.geyser.core.bukkit;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -22,10 +22,10 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import selim.geysercore.shared.EnumComponent;
-import selim.geysercore.shared.GeyserCoreInfo;
-import selim.geysercore.shared.IGeyserCorePlugin;
-import selim.geysercore.shared.IGeyserPlugin;
+import selim.geyser.core.shared.EnumComponent;
+import selim.geyser.core.shared.GeyserCoreInfo;
+import selim.geyser.core.shared.IGeyserCorePlugin;
+import selim.geyser.core.shared.IGeyserPlugin;
 
 public class GeyserCoreSpigot extends JavaPlugin
 		implements Listener, PluginMessageListener, IGeyserCorePlugin {
@@ -75,8 +75,11 @@ public class GeyserCoreSpigot extends JavaPlugin
 		if (plugin instanceof IGeyserCorePlugin) {
 			IGeyserCorePlugin geyserCorePlugin = (IGeyserCorePlugin) plugin;
 			for (EnumComponent component : geyserCorePlugin.providedComponents())
-				if (!CORE_PLUGINS.containsKey(component))
+				if (!CORE_PLUGINS.containsKey(component)) {
 					CORE_PLUGINS.put(component, geyserCorePlugin);
+					LOGGER.info(String.format(GeyserCoreInfo.GEYSER_WELCOME_MESSAGE, plugin.getName(),
+							component.name().toLowerCase()));
+				}
 		}
 		if (plugin instanceof IGeyserPlugin) {
 			IGeyserPlugin geyserPlugin = (IGeyserPlugin) plugin;
@@ -163,13 +166,15 @@ public class GeyserCoreSpigot extends JavaPlugin
 
 	private List<EnumComponent> parseComponents(byte[] message) {
 		ByteBuf buf = Unpooled.copiedBuffer(message);
-		buf.readChar();
+		buf.readByte();
 		List<EnumComponent> components = new LinkedList<>();
 		int numComponents = buf.readInt();
+		System.out.println("numComp: " + numComponents);
 		for (int i = 0; i < numComponents; i++) {
 			String name = BukkitByteBufUtils.readUTF8String(buf);
 			try {
 				components.add(EnumComponent.valueOf(name));
+				System.out.println(name);
 			} catch (IllegalArgumentException e) {
 				LOGGER.log(Level.WARNING, "client tried sending illegal EnumComponent, " + name
 						+ ", this could be because the Geyser Core plugin is out of date");

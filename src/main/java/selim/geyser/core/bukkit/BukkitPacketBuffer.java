@@ -1,4 +1,4 @@
-package selim.geysercore.bukkit;
+package selim.geyser.core.bukkit;
 
 import java.io.DataInputStream;
 import java.io.IOException;

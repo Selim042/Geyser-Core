@@ -1,4 +1,4 @@
-package selim.geysercore.shared;
+package selim.geyser.core.shared;
 
 import java.io.Serializable;
 

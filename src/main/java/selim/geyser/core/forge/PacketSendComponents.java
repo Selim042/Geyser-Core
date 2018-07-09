@@ -1,4 +1,4 @@
-package selim.geysercore.forge;
+package selim.geyser.core.forge;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,11 +9,11 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import selim.geysercore.shared.EnumComponent;
+import selim.geyser.core.shared.EnumComponent;
 
 public class PacketSendComponents implements IMessage {
 
-	private final List<EnumComponent> components = new ArrayList<>();
+	protected final List<EnumComponent> components = new ArrayList<>();
 
 	public PacketSendComponents() {}
 

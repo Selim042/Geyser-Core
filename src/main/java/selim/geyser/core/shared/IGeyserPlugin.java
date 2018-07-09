@@ -1,4 +1,4 @@
-package selim.geysercore.shared;
+package selim.geyser.core.shared;
 
 public interface IGeyserPlugin {
 

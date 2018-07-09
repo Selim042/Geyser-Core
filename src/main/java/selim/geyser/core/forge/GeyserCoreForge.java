@@ -1,4 +1,4 @@
-package selim.geysercore.forge;
+package selim.geyser.core.forge;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -15,8 +15,8 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
-import selim.geysercore.shared.EnumComponent;
-import selim.geysercore.shared.GeyserCoreInfo;
+import selim.geyser.core.shared.EnumComponent;
+import selim.geyser.core.shared.GeyserCoreInfo;
 
 @Mod(modid = GeyserCoreInfo.ID, name = GeyserCoreInfo.NAME, version = GeyserCoreInfo.VERSION,
 		clientSideOnly = true)
@@ -60,9 +60,8 @@ public class GeyserCoreForge {
 							INSTALLED_COMPONENTS.add(component);
 							ModContainer container = getModContainer(modid);
 							if (container != null)
-								LOGGER.info("Welcome to the party " + container.getName()
-										+ ", and thanks for providing the "
-										+ component.name().toLowerCase());
+								LOGGER.info(String.format(GeyserCoreInfo.GEYSER_WELCOME_MESSAGE,
+										container.getName(), component.name().toLowerCase()));
 						} catch (IllegalArgumentException e) {}
 					}
 				}
