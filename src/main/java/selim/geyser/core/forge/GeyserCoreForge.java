@@ -35,8 +35,8 @@ public class GeyserCoreForge {
 		network.registerMessage(PacketSendComponents.Handler.class, PacketSendComponents.class,
 				GeyserCoreInfo.PacketDiscrimators.SEND_COMPONENTS, Side.CLIENT);
 
-		FMLInterModComms.sendMessage(GeyserCoreInfo.ID,
-				GeyserCoreInfo.ID + ":components:" + GeyserCoreInfo.ID, EnumComponent.CORE.toString());
+		FMLInterModComms.sendMessage(GeyserCoreInfo.ID, GeyserCoreInfo.IMC_SEND_KEY,
+				EnumComponent.CORE.toString());
 	}
 
 	private static final List<EnumComponent> INSTALLED_COMPONENTS = new LinkedList<>();
@@ -48,8 +48,8 @@ public class GeyserCoreForge {
 	@EventHandler
 	public void imcCallback(FMLInterModComms.IMCEvent event) {
 		for (final FMLInterModComms.IMCMessage imcMessage : event.getMessages()) {
-			if (imcMessage.key.matches(GeyserCoreInfo.ID + ":components:.*")) {
-				String modid = imcMessage.key.split(":")[2];
+			if (imcMessage.key.equals(GeyserCoreInfo.ID + ":components")) {
+				String modid = imcMessage.getSender();
 				if (imcMessage.isStringMessage()) {
 					String value = imcMessage.getStringValue();
 					for (String s : value.split(":")) {
