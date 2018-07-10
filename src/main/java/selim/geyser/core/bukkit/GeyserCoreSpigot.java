@@ -145,8 +145,16 @@ public class GeyserCoreSpigot extends JavaPlugin
 					missingComponents.add(component);
 			if (missingComponents.isEmpty())
 				PLAYER_DATA.put(player, components);
-			else
+			else {
 				kickPlayerForMissing(player, missingComponents);
+				break;
+			}
+			String compList = "";
+			for (EnumComponent c : components)
+				compList += c.name().toLowerCase() + ", ";
+			compList = compList.substring(0, compList.length() - 2);
+			LOGGER.log(Level.INFO, player.getName()
+					+ " has connected with the following Geyser components: " + compList);
 			break;
 		}
 	}
@@ -169,12 +177,10 @@ public class GeyserCoreSpigot extends JavaPlugin
 		buf.readByte();
 		List<EnumComponent> components = new LinkedList<>();
 		int numComponents = buf.readInt();
-		System.out.println("numComp: " + numComponents);
 		for (int i = 0; i < numComponents; i++) {
 			String name = BukkitByteBufUtils.readUTF8String(buf);
 			try {
 				components.add(EnumComponent.valueOf(name));
-				System.out.println(name);
 			} catch (IllegalArgumentException e) {
 				LOGGER.log(Level.WARNING, "client tried sending illegal EnumComponent, " + name
 						+ ", this could be because the Geyser Core plugin is out of date");
