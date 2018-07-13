@@ -78,9 +78,11 @@ public class NetworkHandler implements PluginMessageListener {
 			GeyserPacket packet = pair.left().newInstance();
 			packet.fromBytes(buf);
 			GeyserPacketHandler handler = pair.right();
-			GeyserPacket ret = handler.handle(player, packet);
-			if (ret != null)
-				sendPacket(player, (GeyserPacket) ret);
+			if (handler != null) {
+				GeyserPacket ret = handler.handle(player, packet);
+				if (ret != null)
+					sendPacket(player, (GeyserPacket) ret);
+			}
 		} catch (InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
