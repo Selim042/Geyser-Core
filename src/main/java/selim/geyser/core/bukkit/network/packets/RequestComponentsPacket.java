@@ -3,7 +3,6 @@ package selim.geyser.core.bukkit.network.packets;
 import org.bukkit.entity.Player;
 
 import io.netty.buffer.ByteBuf;
-import selim.geyser.core.bukkit.GeyserCoreSpigot.RequestComponentsPacket;
 import selim.geyser.core.bukkit.network.GeyserPacket;
 import selim.geyser.core.bukkit.network.GeyserPacketHandler;
 
