@@ -1,7 +1,6 @@
 package selim.geyser.core.bukkit;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,7 +8,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,29 +16,38 @@ import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.plugin.messaging.PluginMessageListener;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import selim.geyser.core.bukkit.network.NetworkHandler;
+import selim.geyser.core.bukkit.network.packets.RequestComponentsPacket;
+import selim.geyser.core.bukkit.network.packets.SendComponentsPacket;
 import selim.geyser.core.shared.EnumComponent;
 import selim.geyser.core.shared.GeyserCoreInfo;
 import selim.geyser.core.shared.IGeyserCorePlugin;
 import selim.geyser.core.shared.IGeyserPlugin;
 
-public class GeyserCoreSpigot extends JavaPlugin
-		implements Listener, PluginMessageListener, IGeyserCorePlugin {
+public class GeyserCoreSpigot extends JavaPlugin implements Listener,
+		// PluginMessageListener,
+		IGeyserCorePlugin {
 
 	protected static Logger LOGGER;
 	protected static GeyserCoreSpigot INSTANCE;
+	protected static NetworkHandler NETWORK;
 
 	@Override
 	public void onEnable() {
 		LOGGER = this.getLogger();
 		INSTANCE = this;
 		PluginManager manager = this.getServer().getPluginManager();
-		Bukkit.getMessenger().registerOutgoingPluginChannel(this, GeyserCoreInfo.CHANNEL);
+		// Bukkit.getMessenger().registerOutgoingPluginChannel(this,
+		// GeyserCoreInfo.CHANNEL);
 		manager.registerEvents(this, this);
-		Bukkit.getMessenger().registerIncomingPluginChannel(this, GeyserCoreInfo.CHANNEL, this);
+		// Bukkit.getMessenger().registerIncomingPluginChannel(this,
+		// GeyserCoreInfo.CHANNEL, this);
+		NETWORK = NetworkHandler.registerChannel(this, GeyserCoreInfo.CHANNEL);
+		NETWORK.registerPacket(GeyserCoreInfo.PacketDiscrimators.REQUEST_COMPONENTS,
+				RequestComponentsPacket.class, RequestComponentsPacket.Handler.class);
+		NETWORK.registerPacket(GeyserCoreInfo.PacketDiscrimators.SEND_COMPONENTS,
+				SendComponentsPacket.class, new SendComponentsPacket.Handler());
 	}
 
 	@Override
@@ -63,7 +70,14 @@ public class GeyserCoreSpigot extends JavaPlugin
 
 	private static final Map<EnumComponent, IGeyserCorePlugin> CORE_PLUGINS = new HashMap<>();
 	private static final List<EnumComponent> REQUIRED_COMPONENTS = new LinkedList<>();
-	private static final Map<Player, List<EnumComponent>> PLAYER_DATA = new HashMap<>();
+
+	public static List<EnumComponent> getRequiredComponents() {
+		return new LinkedList<>(REQUIRED_COMPONENTS);
+	}
+
+	public static Logger getGeyserLogger() {
+		return LOGGER;
+	}
 
 	public static boolean isComponentRequired(EnumComponent component) {
 		return REQUIRED_COMPONENTS.contains(component);
@@ -108,22 +122,25 @@ public class GeyserCoreSpigot extends JavaPlugin
 			@Override
 			public void run() {
 				if (player.getListeningPluginChannels().contains(GeyserCoreInfo.CHANNEL))
-					player.sendPluginMessage(INSTANCE, GeyserCoreInfo.CHANNEL,
-							new byte[] { GeyserCoreInfo.PacketDiscrimators.REQUEST_COMPONENTS });
+					NETWORK.sendPacket(player, new RequestComponentsPacket());
 				else {
 					kickPlayerForMissing(player, REQUIRED_COMPONENTS);
 					// TODO: Should it announce?
 					// player.sendMessage("This server has " +
 					// GeyserCoreInfo.NAME + " installed. "
-					// + "If you install the client companion Forge mod, "
-					// + "you can see any custom recipes from Spigot plugins
+					// + "If you install the client companion Forge mod,
+					// "
+					// + "you can see any custom recipes from Spigot
+					// plugins
 					// installed on the server in JEI.");
-					// TextComponent base = new TextComponent("You can find the
+					// TextComponent base = new TextComponent("You can
+					// find the
 					// mod ");
 					// TextComponent link = new TextComponent("here.");
 					// link.setUnderlined(true);
 					// link.setColor(ChatColor.BLUE);
-					// link.setClickEvent(new ClickEvent(Action.OPEN_URL,
+					// link.setClickEvent(new
+					// ClickEvent(Action.OPEN_URL,
 					// GeyserCoreInfo.DOWNLOAD_LINK));
 					// base.addExtra(link);
 					// player.spigot().sendMessage(base);
@@ -132,32 +149,34 @@ public class GeyserCoreSpigot extends JavaPlugin
 		}, ping);
 	}
 
-	@Override
-	public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-		if (message.length < 1)
-			return;
-		switch ((char) message[0]) {
-		case GeyserCoreInfo.PacketDiscrimators.SEND_COMPONENTS:
-			List<EnumComponent> components = parseComponents(message);
-			List<EnumComponent> missingComponents = new ArrayList<>();
-			for (EnumComponent component : REQUIRED_COMPONENTS)
-				if (!components.contains(component))
-					missingComponents.add(component);
-			if (missingComponents.isEmpty())
-				PLAYER_DATA.put(player, components);
-			else {
-				kickPlayerForMissing(player, missingComponents);
-				break;
-			}
-			String compList = "";
-			for (EnumComponent c : components)
-				compList += c.name().toLowerCase() + ", ";
-			compList = compList.substring(0, compList.length() - 2);
-			LOGGER.log(Level.INFO, player.getName()
-					+ " has connected with the following Geyser components: " + compList);
-			break;
-		}
-	}
+	// @Override
+	// public void onPluginMessageReceived(String channel, Player player,
+	// byte[] message) {
+	// if (message.length < 1)
+	// return;
+	// switch ((char) message[0]) {
+	// case GeyserCoreInfo.PacketDiscrimators.SEND_COMPONENTS:
+	// List<EnumComponent> components = parseComponents(message);
+	// List<EnumComponent> missingComponents = new ArrayList<>();
+	// for (EnumComponent component : REQUIRED_COMPONENTS)
+	// if (!components.contains(component))
+	// missingComponents.add(component);
+	// if (missingComponents.isEmpty())
+	// PLAYER_DATA.put(player, components);
+	// else {
+	// kickPlayerForMissing(player, missingComponents);
+	// break;
+	// }
+	// String compList = "";
+	// for (EnumComponent c : components)
+	// compList += c.name().toLowerCase() + ", ";
+	// compList = compList.substring(0, compList.length() - 2);
+	// LOGGER.log(Level.INFO, player.getName()
+	// + " has connected with the following Geyser components: "
+	// + compList);
+	// break;
+	// }
+	// }
 
 	private static void kickPlayerForMissing(Player player, List<EnumComponent> missingComponents) {
 		String missingString = "";
@@ -170,23 +189,6 @@ public class GeyserCoreSpigot extends JavaPlugin
 				"This servers requires that you have the following Geyser components installed: "
 						+ missingString + "\nYou can find more information here: "
 						+ GeyserCoreInfo.GEYSER_INFO_URL);
-	}
-
-	private List<EnumComponent> parseComponents(byte[] message) {
-		ByteBuf buf = Unpooled.copiedBuffer(message);
-		buf.readByte();
-		List<EnumComponent> components = new LinkedList<>();
-		int numComponents = buf.readInt();
-		for (int i = 0; i < numComponents; i++) {
-			String name = BukkitByteBufUtils.readUTF8String(buf);
-			try {
-				components.add(EnumComponent.valueOf(name));
-			} catch (IllegalArgumentException e) {
-				LOGGER.log(Level.WARNING, "client tried sending illegal EnumComponent, " + name
-						+ ", this could be because the Geyser Core plugin is out of date");
-			}
-		}
-		return components;
 	}
 
 }
