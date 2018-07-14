@@ -28,7 +28,7 @@ public class NetworkHandler implements PluginMessageListener {
 		this.channelName = channelName;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <T extends GeyserPacket> boolean registerPacket(char discrim, Class<T> packet) {
 		return registerPacket(discrim, packet, (GeyserPacketHandler) null);
 	}
@@ -82,8 +82,10 @@ public class NetworkHandler implements PluginMessageListener {
 					.getValue();
 			GeyserPacket packet = pair.left().newInstance();
 			packet.fromBytes(buf);
+			@SuppressWarnings("rawtypes")
 			GeyserPacketHandler handler = pair.right();
 			if (handler != null) {
+				@SuppressWarnings("unchecked")
 				GeyserPacket ret = handler.handle(player, packet);
 				if (ret != null)
 					sendPacket(player, (GeyserPacket) ret);
