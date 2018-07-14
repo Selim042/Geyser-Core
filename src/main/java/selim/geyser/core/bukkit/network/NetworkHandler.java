@@ -28,6 +28,11 @@ public class NetworkHandler implements PluginMessageListener {
 		this.channelName = channelName;
 	}
 
+	@SuppressWarnings("unchecked")
+	public <T extends GeyserPacket> boolean registerPacket(char discrim, Class<T> packet) {
+		return registerPacket(discrim, packet, (GeyserPacketHandler) null);
+	}
+
 	public <T extends GeyserPacket> boolean registerPacket(char discrim, Class<T> packet,
 			Class<? extends GeyserPacketHandler<? extends T, ? extends GeyserPacket>> handler) {
 		try {
