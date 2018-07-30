@@ -55,15 +55,22 @@ public class NetworkHandler implements PluginMessageListener {
 		return true;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void sendPacket(Player player, GeyserPacket packet) {
 		Entry<Character, Pair<Class<? extends GeyserPacket>, GeyserPacketHandler<? extends GeyserPacket, ? extends GeyserPacket>>> info = getPacketInfo(
 				packet.getClass());
 		if (info == null)
 			return;
-		ByteBuf buf = Unpooled.buffer();
-		buf.writeByte(info.getKey());
-		packet.toBytes(buf);
-		player.sendPluginMessage(this.plugin, this.channelName, buf.array());
+		Bukkit.getScheduler().scheduleAsyncDelayedTask(this.plugin, new Runnable() {
+
+			@Override
+			public void run() {
+				ByteBuf buf = Unpooled.buffer();
+				buf.writeByte(info.getKey());
+				packet.toBytes(buf);
+				player.sendPluginMessage(plugin, channelName, buf.array());
+			}
+		});
 	}
 
 	@Override
