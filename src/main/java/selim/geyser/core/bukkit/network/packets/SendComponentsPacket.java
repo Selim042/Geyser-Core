@@ -11,10 +11,10 @@ import org.bukkit.entity.Player;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import selim.geyser.core.bukkit.BukkitByteBufUtils;
 import selim.geyser.core.bukkit.GeyserCoreSpigot;
 import selim.geyser.core.bukkit.network.GeyserPacket;
 import selim.geyser.core.bukkit.network.GeyserPacketHandler;
+import selim.geyser.core.shared.SharedByteBufUtils;
 import selim.geyser.core.shared.EnumComponent;
 import selim.geyser.core.shared.GeyserCoreInfo;
 
@@ -64,7 +64,7 @@ public class SendComponentsPacket extends GeyserPacket {
 		List<EnumComponent> components = new LinkedList<>();
 		int numComponents = buf.readInt();
 		for (int i = 0; i < numComponents; i++) {
-			String name = BukkitByteBufUtils.readUTF8String(buf);
+			String name = SharedByteBufUtils.readUTF8String(buf);
 			try {
 				components.add(EnumComponent.valueOf(name));
 			} catch (IllegalArgumentException e) {
