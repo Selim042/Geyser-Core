@@ -1,6 +1,8 @@
 package selim.geyser.core.bukkit;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,16 +57,53 @@ public class GeyserCoreSpigot extends JavaPlugin implements Listener,
 		return new EnumComponent[] { EnumComponent.CORE };
 	}
 
-	private int getPing(Player player) {
+	private static boolean reportedPingIssue = false;
+
+	public static int getPing(Player player) {
+		Object entityPlayer = null;
 		try {
-			Object entityPlayer = player.getClass().getMethod("getHandle").invoke(player);
-			return (int) entityPlayer.getClass().getField("ping").get(entityPlayer);
+			entityPlayer = player.getClass().getMethod("getHandle").invoke(player);
+			int ping = -1;
+			try {
+				ping = entityPlayer.getClass().getField("ping").getInt(entityPlayer);
+			} catch (NoSuchFieldException e1) {
+				ping = entityPlayer.getClass().getField("field_71138_i").getInt(entityPlayer);
+			}
+			return ping;
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException | NoSuchFieldException e) {
-			this.getLogger().log(Level.INFO, "Unable to get ping for " + player.getDisplayName()
-					+ ", encountered a " + e.getClass().getName());
+			if (!reportedPingIssue) {
+				LOGGER.log(Level.INFO, "Unable to get player ping, please report this and "
+						+ "give details about your server configuration, " + e.getClass().getName());
+				LOGGER.log(Level.INFO, "This may cause issues with server-client communication.");
+				if (e instanceof NoSuchFieldException && entityPlayer != null) {
+					Class<?> clazz = entityPlayer.getClass();
+					LOGGER.log(Level.INFO, "Dump of " + clazz.getName());
+					LOGGER.log(Level.INFO, "Fields:");
+					for (Field f : clazz.getFields())
+						LOGGER.log(Level.INFO, f.getType().getSimpleName() + ": " + f.getName());
+					LOGGER.log(Level.INFO, "Declared Fields:");
+					for (Field f : clazz.getDeclaredFields())
+						LOGGER.log(Level.INFO, f.getType().getSimpleName() + ": " + f.getName());
+					LOGGER.log(Level.INFO, "Methods:");
+					for (Method m : clazz.getMethods()) {
+						String data = m.getReturnType().getSimpleName() + ": " + m.getName() + "(";
+						for (Class<?> c : m.getParameterTypes())
+							data += c.getName() + ",";
+						LOGGER.log(Level.INFO, data);
+					}
+					LOGGER.log(Level.INFO, "Delcared Methods:");
+					for (Method m : clazz.getDeclaredMethods()) {
+						String data = m.getReturnType().getSimpleName() + ": " + m.getName() + "(";
+						for (Class<?> c : m.getParameterTypes())
+							data += c.getName() + ",";
+						LOGGER.log(Level.INFO, data + ")");
+					}
+				}
+				reportedPingIssue = true;
+			}
 			e.printStackTrace();
-			return -1;
+			return 100;
 		}
 	}
 

@@ -14,9 +14,9 @@ import io.netty.buffer.Unpooled;
 import selim.geyser.core.bukkit.GeyserCoreSpigot;
 import selim.geyser.core.bukkit.network.GeyserPacket;
 import selim.geyser.core.bukkit.network.GeyserPacketHandler;
-import selim.geyser.core.shared.SharedByteBufUtils;
 import selim.geyser.core.shared.EnumComponent;
 import selim.geyser.core.shared.GeyserCoreInfo;
+import selim.geyser.core.shared.SharedByteBufUtils;
 
 public class SendComponentsPacket extends GeyserPacket {
 
@@ -38,6 +38,14 @@ public class SendComponentsPacket extends GeyserPacket {
 		public GeyserPacket handle(Player player, SendComponentsPacket packet) {
 			List<EnumComponent> components = packet.components;
 			List<EnumComponent> missingComponents = new ArrayList<>();
+
+			String compList = "";
+			for (EnumComponent c : components)
+				compList += c.name().toLowerCase() + ", ";
+			compList = compList.substring(0, compList.length() - 2);
+			GeyserCoreSpigot.getGeyserLogger().log(Level.INFO, player.getName()
+					+ " has connected with the following Geyser components: " + compList);
+
 			for (EnumComponent component : GeyserCoreSpigot.getRequiredComponents())
 				if (!components.contains(component))
 					missingComponents.add(component);
@@ -47,12 +55,6 @@ public class SendComponentsPacket extends GeyserPacket {
 				kickPlayerForMissing(player, missingComponents);
 				return null;
 			}
-			String compList = "";
-			for (EnumComponent c : components)
-				compList += c.name().toLowerCase() + ", ";
-			compList = compList.substring(0, compList.length() - 2);
-			GeyserCoreSpigot.getGeyserLogger().log(Level.INFO, player.getName()
-					+ " has connected with the following Geyser components: " + compList);
 			return null;
 		}
 
